@@ -1,0 +1,110 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #34495e; /* Updated body background color */
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s; /* Smooth transition for background color change */
+}
+
+.container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #2c3e50; /* Updated container background color */
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    color: white; /* Text color */
+}
+
+.container h1 {
+    margin-bottom: 20px;
+    color: #fff; /* Heading color */
+}
+
+#loginContainer,
+#homePage {
+    display: none;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #ccc; /* Label color */
+}
+
+input[type="email"],
+input[type="password"],
+textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #fff; /* Input background color */
+    color: #333; /* Input text color */
+}
+
+button {
+    width: calc(100% - 20px);
+    padding: 10px;
+    background-color: #3498db; /* Button background color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+button:hover {
+    background-color: #2980b9; /* Button hover background color */
+    transform: scale(1.05); /* Hover effect: Increase button size */
+}
+
+#message {
+    margin-top: 10px;
+    color: red;
+}
+
+#homePage {
+    display: none;
+}
+
+#userName {
+    font-weight: bold;
+}
+
+#notesList {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.note {
+    background-color: #ecf0f1; /* Note background color */
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#logoutBtn {
+    background-color: #e74c3c; /* Logout button background color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 0;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#logoutBtn:hover {
+    background-color: #c0392b; /* Logout button hover background color */
+    transform: scale(1.05); /* Hover effect: Increase button size */
+}
