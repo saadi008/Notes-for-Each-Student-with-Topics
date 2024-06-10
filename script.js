@@ -1,177 +1,174 @@
-// Function to validate email format
-function validateEmail(email) {
-    var re = /\S+@\S+\.\S+/;
-    return re.test(email);
-}
+// script.js
+document.addEventListener('DOMContentLoaded', () => {
+    checkUserLogin();
+});
 
-// Function to analyze password strength
-function analyzePasswordStrength(password) {
-    // Simple strength assessment (can be improved)
-    if (password.length < 6) {
-        return 'Weak';
-    } else if (password.length < 10) {
-        return 'Medium';
+function checkUserLogin() {
+    const userEmail = localStorage.getItem('email');
+    if (userEmail) {
+        showHomePage();
     } else {
-        return 'Strong';
+        showLoginPage();
     }
 }
 
-// Function to auto logout after a period of inactivity
-var timeout;
-function startTimer() {
-    timeout = setTimeout(function () {
-        logout();
-    }, 300000); // Auto logout after 5 minutes (adjust as needed)
+function showLoginPage() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Enter your email" required />
+            <button type="submit">Login</button>
+        </form>
+    `;
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        localStorage.setItem('email', email);
+        showHomePage();
+    });
 }
 
-function resetTimer() {
-    clearTimeout(timeout);
-    startTimer();
+function showHomePage() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Notes</h2>
+            <button id="profileButton">Profile</button>
+            <button id="darkModeToggle">Dark Mode</button>
+        </div>
+        <button id="logout">Logout</button>
+        <input type="text" id="search" placeholder="Search notes by title" />
+        <form id="noteForm">
+            <input type="hidden" id="noteIndex" />
+            <input type="text" id="noteTitle" placeholder="Note Title" required />
+            <textarea id="noteContent" placeholder="Note Content" rows="4" required></textarea>
+            <select id="noteCategory">
+                <option value="">Select Category</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Ideas">Ideas</option>
+            </select>
+            <button type="submit">Add Note</button>
+        </form>
+        <div id="notesContainer"></div>
+    `;
+
+    document.getElementById('noteForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        addOrUpdateNote();
+    });
+
+    document.getElementById('logout').addEventListener('click', () => {
+        localStorage.removeItem('email');
+        showLoginPage();
+    });
+
+    document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+
+    document.getElementById('profileButton').addEventListener('click', showProfilePage);
+
+    document.getElementById('search').addEventListener('input', filterNotes);
+
+    displayNotes();
 }
 
-// Function to confirm note deletion
-function confirmNoteDeletion(index) {
-    var confirmation = confirm('Are you sure you want to delete this note?');
-    if (confirmation) {
+function addOrUpdateNote() {
+    const title = document.getElementById('noteTitle').value;
+    const content = document.getElementById('noteContent').value;
+    const category = document.getElementById('noteCategory').value;
+    const noteIndex = document.getElementById('noteIndex').value;
+    const timestamp = new Date().toLocaleString();
+
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+
+    if (noteIndex) {
+        notes[noteIndex] = { title, content, category, timestamp };
+    } else {
+        notes.push({ title, content, category, timestamp });
+    }
+
+    localStorage.setItem('notes', JSON.stringify(notes));
+    document.getElementById('noteForm').reset();
+    document.getElementById('noteIndex').value = '';
+    displayNotes();
+}
+
+function displayNotes() {
+    const notesContainer = document.getElementById('notesContainer');
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    const searchQuery = document.getElementById('search').value.toLowerCase();
+    notesContainer.innerHTML = '';
+
+    notes.filter(note => note.title.toLowerCase().includes(searchQuery)).forEach((note, index) => {
+        const noteElement = document.createElement('div');
+        noteElement.className = 'note';
+        noteElement.innerHTML = `
+            <h3>${note.title}</h3>
+            <p>${note.content}</p>
+            <p><strong>Category:</strong> ${note.category}</p>
+            <p><small>${note.timestamp}</small></p>
+            <button onclick="editNote(${index})">Edit</button>
+            <button onclick="confirmDeleteNote(${index})">Delete</button>
+        `;
+        notesContainer.appendChild(noteElement);
+    });
+}
+
+function confirmDeleteNote(index) {
+    if (confirm('Are you sure you want to delete this note?')) {
         deleteNote(index);
     }
 }
 
-// Function to update character counter for notes
-document.getElementById('noteText').addEventListener('input', function () {
-    var maxLength = 200; // Maximum characters allowed
-    var currentLength = this.value.length;
-    var remaining = maxLength - currentLength;
-    document.getElementById('charCount').textContent = remaining + ' characters remaining';
-});
-
-// Function to persist login
-function persistLogin(email) {
-    localStorage.setItem('email', email);
-    resetTimer(); // Reset timer on user activity
-}
-
-// Check user login status when the page loads
-window.onload = function () {
-    checkUserLogin();
-    startTimer(); // Start timer on page load
-};
-
-// Login form submission
-document.getElementById('loginForm').addEventListener('submit', function (event) {
-    event.preventDefault();
-
-    var username = document.getElementById('username').value;
-    var password = document.getElementById('password').value;
-
-    if (validateEmail(username) && password) {
-        persistLogin(username);
-        document.getElementById('message').textContent = 'Login successful!';
-        document.getElementById('loginForm').reset();
-        // Call displayNotes() after login
-        displayNotes();
-    } else {
-        document.getElementById('message').textContent = 'Invalid email or password';
-    }
-});
-
-// Submit note form submission
-document.getElementById('noteForm').addEventListener('submit', function (event) {
-    event.preventDefault();
-
-    var noteText = document.getElementById('noteText').value;
-    if (noteText) {
-        saveNoteToLocalStorage(noteText);
-        document.getElementById('noteText').value = ''; // Clear the input field after submitting
-        document.getElementById('charCount').textContent = '200 characters remaining'; // Reset character counter
-    }
-});
-
-// Logout button click event
-document.getElementById('logoutBtn').addEventListener('click', function () {
-    logout();
-});
-
-// Function to save note to localStorage
-function saveNoteToLocalStorage(note) {
-    var notes = [];
-    if (localStorage.getItem('notes')) {
-        notes = JSON.parse(localStorage.getItem('notes'));
-    }
-    notes.push(note);
-    localStorage.setItem('notes', JSON.stringify(notes));
-    displayNotes();
-}
-
-// Function to delete note from localStorage
 function deleteNote(index) {
-    var notes = JSON.parse(localStorage.getItem('notes'));
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
     notes.splice(index, 1);
     localStorage.setItem('notes', JSON.stringify(notes));
     displayNotes();
 }
 
-// Function to display notes from localStorage
-function displayNotes() {
-    var notes = JSON.parse(localStorage.getItem('notes'));
-    var notesList = document.getElementById('notesList');
-    if (notes && notes.length > 0) {
-        notesList.innerHTML = '';
-        notes.forEach(function (note, index) {
-            var noteElement = document.createElement('div');
-            noteElement.classList.add('note');
-            noteElement.textContent = note;
-            noteElement.setAttribute('onclick', 'confirmNoteDeletion(' + index + ')');
-            notesList.appendChild(noteElement);
-        });
-    } else {
-        notesList.innerHTML = 'No notes available';
-    }
+function editNote(index) {
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    const note = notes[index];
+    document.getElementById('noteTitle').value = note.title;
+    document.getElementById('noteContent').value = note.content;
+    document.getElementById('noteCategory').value = note.category;
+    document.getElementById('noteIndex').value = index;
+
+    // Change the button text to 'Update Note' when editing
+    document.querySelector('form button[type="submit"]').innerText = 'Update Note';
+    document.getElementById('noteForm').addEventListener('submit', updateNote);
 }
 
-// Function to check user login status
-function checkUserLogin() {
-    var email = localStorage.getItem('email');
-    if (email) {
-        document.getElementById('loginContainer').style.display = 'none';
-        document.getElementById('homePage').style.display = 'block';
-        document.getElementById('userName').textContent = email;
-    } else {
-        document.getElementById('loginContainer').style.display = 'block';
-        document.getElementById('homePage').style.display = 'none';
-    }
+function updateNote(e) {
+    e.preventDefault();
+    const index = document.getElementById('noteIndex').value;
+    addOrUpdateNote();
+    // Reset the form and change button text back to 'Add Note' after update
+    document.getElementById('noteForm').reset();
+    document.querySelector('form button[type="submit"]').innerText = 'Add Note';
+    // Remove the event listener to prevent adding another listener
+    document.getElementById('noteForm').removeEventListener('submit', updateNote);
 }
 
-// Function to logout
-function logout() {
-    localStorage.removeItem('email');
-    clearTimeout(timeout); // Clear timer on logout
-    checkUserLogin();
+function filterNotes() {
+    displayNotes();
 }
 
-// Function to search notes
-document.getElementById('searchNote').addEventListener('input', function () {
-    var searchTerm = this.value.toLowerCase();
-    var notes = JSON.parse(localStorage.getItem('notes'));
-    var filteredNotes = notes.filter(function (note) {
-        return note.toLowerCase().includes(searchTerm);
-    });
-    displayFilteredNotes(filteredNotes);
-});
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
 
-// Function to display filtered notes
-function displayFilteredNotes(filteredNotes) {
-    var notesList = document.getElementById('notesList');
-    if (filteredNotes && filteredNotes.length > 0) {
-        notesList.innerHTML = '';
-        filteredNotes.forEach(function (note, index) {
-            var noteElement = document.createElement('div');
-            noteElement.classList.add('note');
-            noteElement.textContent = note;
-            noteElement.setAttribute('onclick', 'confirmNoteDeletion(' + index + ')');
-            notesList.appendChild(noteElement);
-        });
-    } else {
-        notesList.innerHTML = 'No matching notes found';
-    }
+function showProfilePage() {
+    const email = localStorage.getItem('email');
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <h2>Profile</h2>
+        <p>Email: ${email}</p>
+        <button id="backToNotes">Back to Notes</button>
+    `;
+
+    document.getElementById('backToNotes').addEventListener('click', showHomePage);
 }
