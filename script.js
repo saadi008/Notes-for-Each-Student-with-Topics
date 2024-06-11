@@ -1,4 +1,3 @@
-// script.js
 document.addEventListener('DOMContentLoaded', () => {
     checkUserLogin();
 });
@@ -92,6 +91,7 @@ function addOrUpdateNote() {
     localStorage.setItem('notes', JSON.stringify(notes));
     document.getElementById('noteForm').reset();
     document.getElementById('noteIndex').value = '';
+    document.querySelector('form button[type="submit"]').innerText = 'Add Note';
     displayNotes();
 }
 
@@ -110,7 +110,7 @@ function displayNotes() {
             <p><strong>Category:</strong> ${note.category}</p>
             <p><small>${note.timestamp}</small></p>
             <button onclick="editNote(${index})">Edit</button>
-            <button onclick="confirmDeleteNote(${index})">Delete</button>
+            <button class="delete-button" onclick="confirmDeleteNote(${index})">Delete</button>
         `;
         notesContainer.appendChild(noteElement);
     });
@@ -139,18 +139,6 @@ function editNote(index) {
 
     // Change the button text to 'Update Note' when editing
     document.querySelector('form button[type="submit"]').innerText = 'Update Note';
-    document.getElementById('noteForm').addEventListener('submit', updateNote);
-}
-
-function updateNote(e) {
-    e.preventDefault();
-    const index = document.getElementById('noteIndex').value;
-    addOrUpdateNote();
-    // Reset the form and change button text back to 'Add Note' after update
-    document.getElementById('noteForm').reset();
-    document.querySelector('form button[type="submit"]').innerText = 'Add Note';
-    // Remove the event listener to prevent adding another listener
-    document.getElementById('noteForm').removeEventListener('submit', updateNote);
 }
 
 function filterNotes() {
