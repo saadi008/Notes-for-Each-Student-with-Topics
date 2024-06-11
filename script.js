@@ -1,3 +1,5 @@
+// script.js
+
 document.addEventListener('DOMContentLoaded', () => {
     checkUserLogin();
 });
@@ -71,6 +73,14 @@ function showHomePage() {
     document.getElementById('search').addEventListener('input', filterNotes);
 
     displayNotes();
+
+    // Add event listeners for edit buttons
+    const editButtons = document.querySelectorAll('.edit-button');
+    editButtons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+            editNote(index);
+        });
+    });
 }
 
 function addOrUpdateNote() {
@@ -109,7 +119,7 @@ function displayNotes() {
             <p>${note.content}</p>
             <p><strong>Category:</strong> ${note.category}</p>
             <p><small>${note.timestamp}</small></p>
-            <button onclick="editNote(${index})">Edit</button>
+            <button class="edit-button">Edit</button>
             <button class="delete-button" onclick="confirmDeleteNote(${index})">Delete</button>
         `;
         notesContainer.appendChild(noteElement);
@@ -160,3 +170,4 @@ function showProfilePage() {
 
     document.getElementById('backToNotes').addEventListener('click', showHomePage);
 }
+    
