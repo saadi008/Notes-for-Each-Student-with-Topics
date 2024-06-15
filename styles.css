@@ -1,4 +1,3 @@
-/* styles.css */
 body {
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
@@ -111,29 +110,71 @@ button:hover {
     transform: scale(1.05);
 }
 
-#logout {
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-#logout:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-}
-
-#profileButton {
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-#profileButton:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-}
-
+#logout,
+#profileButton,
 #darkModeToggle {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
 }
 
+#logout:hover,
+#profileButton:hover,
 #darkModeToggle:hover {
     background-color: #0056b3;
     transform: scale(1.05);
+}
+
+#profileButton,
+#darkModeToggle {
+    margin-left: 10px;
+}
+
+.filter-container {
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.filter-container select {
+    width: auto;
+}
+
+.feedback {
+    color: green;
+    font-size: 1em;
+    margin-top: 10px;
+    display: none;
+}
+
+.show-password-container {
+    display: flex;
+    align-items: center;
+}
+
+.show-password-container input[type="checkbox"] {
+    margin-left: 5px;
+}
+
+/* Dark mode styles */
+body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+    background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+}
+
+body.dark-mode .note {
+    background-color: #333333;
+    border: 1px solid #ffffff;
 }
