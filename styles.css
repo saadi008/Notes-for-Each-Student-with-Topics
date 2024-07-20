@@ -1,180 +1,133 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    font-family: 'Roboto', sans-serif;
     margin: 0;
+    padding: 0;
+    background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(225, 225, 225, 1) 35%, rgba(200, 200, 200, 1) 100%);
+    color: #333;
     transition: background-color 0.3s, color 0.3s;
 }
 
-#app {
-    width: 90%;
-    max-width: 600px;
-    background: white;
-    padding: 20px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+h2 {
+    text-align: center;
+    color: #444;
+    margin-bottom: 20px;
 }
 
 form {
     display: flex;
     flex-direction: column;
+    width: 90%;
+    max-width: 400px;
+    margin: 0 auto 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, box-shadow 0.3s;
 }
 
-input,
-button,
-textarea,
-select {
-    margin: 10px 0;
-    padding: 10px;
-    font-size: 1em;
+input, textarea, select, button {
+    margin-bottom: 15px;
+    padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+    font-size: 16px;
+    transition: border-color 0.3s, background-color 0.3s;
 }
 
-textarea {
-    resize: vertical;
+input:focus, textarea:focus, select:focus {
+    border-color: #888;
+    background-color: #f9f9f9;
+    outline: none;
 }
 
 button {
-    background-color: #007BFF;
-    color: white;
+    background: #007bff;
+    color: #fff;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
+    padding: 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
+    background: #0056b3;
+}
+
+.feedback {
+    color: red;
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 10px;
 }
 
 .note {
-    background: #f7f7f7;
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    position: relative;
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+}
+
+.note:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .note h3 {
-    margin: 0 0 10px 0;
+    margin: 0 0 10px;
+    color: #007bff;
 }
 
 .note p {
-    margin: 0 0 10px 0;
+    margin: 0 0 10px;
 }
 
 .note button {
     margin-right: 10px;
+    background: #28a745;
 }
 
-.note button:last-child {
-    margin-right: 0;
+.note button:last-of-type {
+    background: #dc3545;
 }
 
-#search {
-    margin-bottom: 20px;
+.filter-container {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    max-width: 400px;
+    margin: 0 auto 20px;
+    padding: 0 10px;
 }
 
 .dark-mode {
-    background-color: #333;
-    color: white;
+    background: radial-gradient(circle, rgba(34, 34, 34, 1) 0%, rgba(17, 17, 17, 1) 35%, rgba(0, 0, 0, 1) 100%);
+    color: #ddd;
 }
 
-.dark-mode input,
-.dark-mode button,
-.dark-mode textarea,
-.dark-mode select {
-    background-color: #555;
-    color: white;
-    border: 1px solid #444;
+.dark-mode button {
+    background: #444;
+    color: #ddd;
+}
+
+.dark-mode button:hover {
+    background: #555;
+}
+
+.dark-mode input, .dark-mode textarea, .dark-mode select {
+    background: #444;
+    color: #ddd;
+    border: 1px solid #555;
 }
 
 .dark-mode .note {
     background: #444;
-    color: white;
+    color: #ddd;
 }
 
-.delete-button {
-    background-color: #ff4d4d;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.delete-button:hover {
-    background-color: #ff1a1a;
-    transform: scale(1.05);
-}
-
-#logout,
-#profileButton,
-#darkModeToggle {
-    margin-top: 10px;
-    padding: 10px 20px;
-    border: none;
-    background-color: #007BFF;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-#logout:hover,
-#profileButton:hover,
-#darkModeToggle:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-}
-
-#profileButton,
-#darkModeToggle {
-    margin-left: 10px;
-}
-
-.filter-container {
-    margin: 20px 0;
-    display: flex;
-    justify-content: space-between;
-}
-
-.filter-container select {
-    width: auto;
-}
-
-.feedback {
-    color: green;
-    font-size: 1em;
-    margin-top: 10px;
-    display: none;
-}
-
-.show-password-container {
-    display: flex;
-    align-items: center;
-}
-
-.show-password-container input[type="checkbox"] {
-    margin-left: 5px;
-}
-
-/* Dark mode styles */
-body.dark-mode {
-    background-color: #121212;
-    color: #ffffff;
-}
-
-body.dark-mode input,
-body.dark-mode textarea,
-body.dark-mode select {
-    background-color: #333333;
-    color: #ffffff;
-    border: 1px solid #ffffff;
-}
-
-body.dark-mode .note {
-    background-color: #333333;
-    border: 1px solid #ffffff;
+.dark-mode .note h3 {
+    color: #66b2ff;
 }

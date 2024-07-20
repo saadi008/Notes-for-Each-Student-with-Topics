@@ -1,71 +1,109 @@
 document.addEventListener('DOMContentLoaded', () => {
-    checkUserLogin();
-});
-
-function checkUserLogin() {
-    const userEmail = localStorage.getItem('email');
-    if (userEmail) {
+    if (localStorage.getItem('email')) {
         showHomePage();
     } else {
         showLoginPage();
     }
-}
+});
 
 function showLoginPage() {
     const app = document.getElementById('app');
     app.innerHTML = `
         <h2>Login</h2>
         <form id="loginForm">
-            <input type="email" id="email" placeholder="Enter your email" required />
-            <div class="show-password-container">
-                <input type="password" id="password" placeholder="Enter your password" required />
-                <input type="checkbox" id="showPassword"> Show Password
-            </div>
+            <input type="email" id="loginEmail" placeholder="Email" required />
+            <input type="password" id="loginPassword" placeholder="Password" required />
             <label>
-                <input type="checkbox" id="rememberMe"> Remember Me
+                <input type="checkbox" id="showLoginPassword"> Show Password
             </label>
             <button type="submit">Login</button>
             <p class="feedback" id="loginFeedback"></p>
-            <p class="loading" id="loadingIndicator">Logging in...</p>
         </form>
+        <p>Don't have an account? <a href="#" id="showSignUp">Sign Up</a></p>
     `;
 
-    document.getElementById('showPassword').addEventListener('change', () => {
-        const passwordField = document.getElementById('password');
-        passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
-    });
-
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const rememberMe = document.getElementById('rememberMe').checked;
-        
-        if (validateEmail(email)) {
-            showLoading(true);
-            setTimeout(() => {
-                localStorage.setItem('email', email);
-                if (rememberMe) {
-                    localStorage.setItem('rememberMe', 'true');
-                } else {
-                    localStorage.removeItem('rememberMe');
-                }
-                showLoading(false);
-                showHomePage();
-            }, 1000); // Simulate an API call
-        } else {
-            showFeedback('Invalid email format.', 'loginFeedback');
-        }
-    });
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('showLoginPassword').addEventListener('change', togglePasswordVisibility);
+    document.getElementById('showSignUp').addEventListener('click', showSignUpPage);
 }
 
-function showLoading(isLoading) {
-    const loadingIndicator = document.getElementById('loadingIndicator');
-    if (isLoading) {
-        loadingIndicator.style.display = 'block';
+function showSignUpPage() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <h2>Sign Up</h2>
+        <form id="signUpForm">
+            <input type="email" id="signUpEmail" placeholder="Email" required />
+            <input type="password" id="signUpPassword" placeholder="Password" required />
+            <label>
+                <input type="checkbox" id="showSignUpPassword"> Show Password
+            </label>
+            <button type="submit">Sign Up</button>
+            <p class="feedback" id="signUpFeedback"></p>
+        </form>
+        <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+    `;
+
+    document.getElementById('signUpForm').addEventListener('submit', handleSignUp);
+    document.getElementById('showSignUpPassword').addEventListener('change', togglePasswordVisibility);
+    document.getElementById('showLogin').addEventListener('click', showLoginPage);
+}
+
+function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+
+    const user = users.find(user => user.email === email && user.password === password);
+
+    if (user) {
+        localStorage.setItem('email', email);
+        showHomePage();
     } else {
-        loadingIndicator.style.display = 'none';
+        showFeedback('Invalid email or password.', 'loginFeedback');
     }
+}
+
+function handleSignUp(e) {
+    e.preventDefault();
+    const email = document.getElementById('signUpEmail').value;
+    const password = document.getElementById('signUpPassword').value;
+
+    if (!validatePassword(password)) {
+        showFeedback('Password must be at least 8 characters long, contain a number and a special character.', 'signUpFeedback');
+        return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+
+    if (users.find(user => user.email === email)) {
+        showFeedback('Email already exists.', 'signUpFeedback');
+        return;
+    }
+
+    users.push({ email, password });
+    localStorage.setItem('users', JSON.stringify(users));
+    showFeedback('Sign up successful. Please log in.', 'signUpFeedback');
+}
+
+function validatePassword(password) {
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+}
+
+function showFeedback(message, elementId) {
+    const feedbackElement = document.getElementById(elementId);
+    feedbackElement.textContent = message;
+    setTimeout(() => {
+        feedbackElement.textContent = '';
+    }, 3000);
+}
+
+function togglePasswordVisibility(e) {
+    const checkbox = e.target;
+    const passwordField = checkbox.id === 'showLoginPassword' ? document.getElementById('loginPassword') : document.getElementById('signUpPassword');
+    passwordField.type = checkbox.checked ? 'text' : 'password';
 }
 
 function showHomePage() {
@@ -96,7 +134,7 @@ function showHomePage() {
             <input type="hidden" id="noteIndex" />
             <input type="text" id="noteTitle" placeholder="Note Title" required />
             <textarea id="noteContent" placeholder="Note Content" rows="4" maxlength="1000" required></textarea>
-            <select id="noteCategory">
+            <select id="noteCategory" required>
                 <option value="">Select Category</option>
                 <option value="Work">Work</option>
                 <option value="Personal">Personal</option>
@@ -118,9 +156,7 @@ function showHomePage() {
     });
 
     document.getElementById('logout').addEventListener('click', () => {
-        if (!localStorage.getItem('rememberMe')) {
-            localStorage.removeItem('email');
-        }
+        localStorage.removeItem('email');
         showLoginPage();
     });
 
@@ -137,108 +173,91 @@ function showHomePage() {
     displayNotes();
 }
 
+function getCurrentUserNotes() {
+    const email = localStorage.getItem('email');
+    const notes = JSON.parse(localStorage.getItem('notes')) || {};
+    return notes[email] || [];
+}
+
+function saveCurrentUserNotes(notes) {
+    const email = localStorage.getItem('email');
+    const allNotes = JSON.parse(localStorage.getItem('notes')) || {};
+    allNotes[email] = notes;
+    localStorage.setItem('notes', JSON.stringify(allNotes));
+}
+
 function addOrUpdateNote() {
-    const title = document.getElementById('noteTitle').value;
-    const content = document.getElementById('noteContent').value;
-    const category = document.getElementById('noteCategory').value;
+    const notes = getCurrentUserNotes();
     const noteIndex = document.getElementById('noteIndex').value;
-    const timestamp = new Date().toLocaleString();
+    const noteTitle = document.getElementById('noteTitle').value;
+    const noteContent = document.getElementById('noteContent').value;
+    const noteCategory = document.getElementById('noteCategory').value;
 
-    const notes = JSON.parse(localStorage.getItem('notes')) || [];
-
-    if (notes.some((note, index) => note.title === title && index != noteIndex)) {
-        showFeedback('A note with this title already exists.', 'noteFeedback');
-        return;
-    }
-
-    if (noteIndex) {
-        if (confirm('Are you sure you want to update this note?')) {
-            notes[noteIndex] = { title, content, category, timestamp };
-            showFeedback('Note updated successfully.', 'noteFeedback');
-        } else {
-            return;
-        }
+    if (noteIndex === '') {
+        notes.push({ title: noteTitle, content: noteContent, category: noteCategory, created: new Date() });
     } else {
-        notes.push({ title, content, category, timestamp });
-        showFeedback('Note added successfully.', 'noteFeedback');
+        notes[noteIndex] = { title: noteTitle, content: noteContent, category: noteCategory, created: notes[noteIndex].created, updated: new Date() };
     }
 
-    localStorage.setItem('notes', JSON.stringify(notes));
-    document.getElementById('noteForm').reset();
-    document.getElementById('noteIndex').value = '';
-    document.querySelector('form button[type="submit"]').innerText = 'Add Note';
+    saveCurrentUserNotes(notes);
+    showFeedback('Note saved successfully.', 'noteFeedback');
     displayNotes();
+    document.getElementById('noteForm').reset();
 }
 
 function displayNotes() {
     const notesContainer = document.getElementById('notesContainer');
-    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    notesContainer.innerHTML = '';
+    const notes = getCurrentUserNotes();
     const searchQuery = document.getElementById('search').value.toLowerCase();
     const categoryFilter = document.getElementById('categoryFilter').value;
-    const sortNotes = document.getElementById('sortNotes').value;
+    const sortOption = document.getElementById('sortNotes').value;
 
-    notesContainer.innerHTML = '';
+    let filteredNotes = notes.filter(note => {
+        return (note.title.toLowerCase().includes(searchQuery) &&
+            (categoryFilter === '' || note.category === categoryFilter));
+    });
 
-    let filteredNotes = notes.filter(note => 
-        note.title.toLowerCase().includes(searchQuery) &&
-        (categoryFilter ? note.category === categoryFilter : true)
-    );
-
-    if (sortNotes === 'newest') {
-        filteredNotes = filteredNotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    } else {
-        filteredNotes = filteredNotes.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    }
+    filteredNotes.sort((a, b) => {
+        if (sortOption === 'newest') {
+            return new Date(b.created) - new Date(a.created);
+        } else {
+            return new Date(a.created) - new Date(b.created);
+        }
+    });
 
     filteredNotes.forEach((note, index) => {
         const noteElement = document.createElement('div');
-        noteElement.className = 'note';
+        noteElement.classList.add('note');
         noteElement.innerHTML = `
-            <h3>${highlightText(note.title, searchQuery)}</h3>
-            <p>${highlightText(note.content, searchQuery)}</p>
+            <h3>${note.title}</h3>
+            <p>${note.content}</p>
             <p><strong>Category:</strong> ${note.category}</p>
-            <p><small>${note.timestamp}</small></p>
-            <button class="edit-button" onclick="editNote(${index})">Edit</button>
-            <button class="delete-button" onclick="confirmDeleteNote(${index})">Delete</button>
+            <button onclick="editNote(${index})">Edit</button>
+            <button onclick="deleteNote(${index})">Delete</button>
         `;
         notesContainer.appendChild(noteElement);
     });
 }
 
-function confirmDeleteNote(index) {
-    if (confirm('Are you sure you want to delete this note?')) {
-        deleteNote(index);
-    }
-}
-
-function deleteNote(index) {
-    const notes = JSON.parse(localStorage.getItem('notes')) || [];
-    notes.splice(index, 1);
-    localStorage.setItem('notes', JSON.stringify(notes));
-    displayNotes();
-    showFeedback('Note deleted successfully.', 'noteFeedback');
-}
-
 function editNote(index) {
-    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    const notes = getCurrentUserNotes();
     const note = notes[index];
+    document.getElementById('noteIndex').value = index;
     document.getElementById('noteTitle').value = note.title;
     document.getElementById('noteContent').value = note.content;
     document.getElementById('noteCategory').value = note.category;
-    document.getElementById('noteIndex').value = index;
-
-    document.querySelector('form button[type="submit"]').innerText = 'Update Note';
 }
 
-function highlightText(text, query) {
-    if (!query) return text;
-    const regex = new RegExp(`(${query})`, 'gi');
-    return text.replace(regex, '<span class="highlight">$1</span>');
+function deleteNote(index) {
+    const notes = getCurrentUserNotes();
+    notes.splice(index, 1);
+    saveCurrentUserNotes(notes);
+    displayNotes();
 }
 
 function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    const isDarkMode = document.body.classList.contains('dark-mode');
+    const isDarkMode = document.body.classList.toggle('dark-mode');
     localStorage.setItem('darkMode', isDarkMode);
 }
 
@@ -247,27 +266,9 @@ function showProfilePage() {
     const app = document.getElementById('app');
     app.innerHTML = `
         <h2>Profile</h2>
-        <form id="profileForm">
-            <label>Email:</label>
-            <input type="email" id="profileEmail" value="${email}" required />
-            <button type="submit">Update</button>
-        </form>
-        <p class="feedback" id="profileFeedback"></p>
+        <p>Email: ${email}</p>
         <button id="backToNotes">Back to Notes</button>
     `;
-
-    document.getElementById('profileForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const newEmail = document.getElementById('profileEmail').value;
-        if (validateEmail(newEmail)) {
-            localStorage.setItem('email', newEmail);
-            showFeedback('Profile updated successfully.', 'profileFeedback');
-            showHomePage();
-        } else {
-            showFeedback('Invalid email format.', 'profileFeedback');
-        }
-    });
-
     document.getElementById('backToNotes').addEventListener('click', showHomePage);
 }
 
@@ -284,3 +285,51 @@ function showFeedback(message, elementId) {
         feedbackElement.style.display = 'none';
     }, 3000);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
